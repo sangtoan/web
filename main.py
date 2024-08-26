@@ -1,4 +1,5 @@
 import streamlit as st
+from modules.special_points import special_points_calculator
 
 # Tiêu đề chính của ứng dụng
 st.title("STex - Phần Mềm Hỗ Trợ Sử Dụng Latex")
