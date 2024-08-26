@@ -28,7 +28,7 @@ if st.button("Điều kiện đếm số"):
 
 if st.button("Điểm trong tam giác"):
     st.write("Bạn đã chọn chức năng Điểm trong tam giác")
-    SpecialPointsTab()
+    special_points_calculator()
 
 if st.button("Tích vô hướng có hướng"):
     st.write("Bạn đã chọn chức năng Tích vô hướng có hướng")
