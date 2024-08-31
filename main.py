@@ -1,7 +1,7 @@
 import streamlit as st
-import requests
-import base64
+import subprocess
 import os
+import base64
 from modules.special_points import special_points_calculator
 
 # Hàm để tạo tệp main.tex với nội dung từ người dùng
@@ -20,21 +20,23 @@ def create_main_tex(latex_content):
     with open("main.tex", "w") as tex_file:
         tex_file.write(main_tex_content)
 
-# Hàm chuyển đổi LaTeX sang PDF trực tuyến
-def compile_latex_online():
-    with open("main.tex", "r") as tex_file:
-        latex_code = tex_file.read()
+# Hàm biên dịch LaTeX cục bộ bằng pdflatex
+def compile_latex_locally():
+    try:
+        result = subprocess.run(
+            ["pdflatex", "main.tex"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
 
-    url = "https://latexonline.cc/compile"
-    response = requests.post(url, data={"text": latex_code})
-    
-    if response.status_code == 200:
-        pdf_data = response.content
-        return pdf_data, None
-    else:
-        error_message = response.text  # Lấy nội dung chi tiết của lỗi
-        return None, f"Failed to compile LaTeX online. Error: {error_message}"
-
+        if result.returncode == 0:
+            with open("main.pdf", "rb") as pdf_file:
+                pdf_data = pdf_file.read()
+            return pdf_data, None
+        else:
+            return None, result.stderr.decode()
+    except Exception as e:
+        return None, str(e)
 
 # Hàm tạo liên kết tải về PDF
 def download_link(pdf_data, filename, link_text):
@@ -189,7 +191,7 @@ elif main_menu == "Chuyển Đổi LaTeX sang PDF":
     if st.button("Chuyển Đổi sang PDF"):
         if latex_content:
             create_main_tex(latex_content)  # Tạo tệp main.tex
-            pdf_data, error = compile_latex_online()  # Biên dịch LaTeX sang PDF
+            pdf_data, error = compile_latex_locally()  # Biên dịch LaTeX sang PDF cục bộ
             if pdf_data:
                 st.markdown(download_link(pdf_data, "output.pdf", "Tải về PDF"), unsafe_allow_html=True)
             else:
@@ -198,3 +200,5 @@ elif main_menu == "Chuyển Đổi LaTeX sang PDF":
         # Dọn dẹp tệp tạm thời sau khi xong việc
         if os.path.exists("main.tex"):
             os.remove("main.tex")
+        if os.path.exists("main.pdf"):
+            os.remove("main.pdf")
