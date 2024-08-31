@@ -1,5 +1,43 @@
 import streamlit as st
+import requests
+import base64
+import os
 from modules.special_points import special_points_calculator
+
+# Hàm để tạo tệp main.tex với nội dung từ người dùng
+def create_main_tex(latex_content):
+    main_tex_content = r"""
+    \documentclass{article}
+    \usepackage[utf8]{inputenc}
+    \usepackage{amsmath}
+    \usepackage{amsfonts}
+    \usepackage{amssymb}
+    \begin{document}
+    """ + latex_content + r"""
+    \end{document}
+    """
+
+    with open("main.tex", "w") as tex_file:
+        tex_file.write(main_tex_content)
+
+# Hàm chuyển đổi LaTeX sang PDF trực tuyến
+def compile_latex_online():
+    with open("main.tex", "r") as tex_file:
+        latex_code = tex_file.read()
+
+    url = "https://latexonline.cc/compile"
+    response = requests.post(url, data={"text": latex_code})
+    
+    if response.status_code == 200:
+        pdf_data = response.content
+        return pdf_data, None
+    else:
+        return None, "Failed to compile LaTeX online."
+
+# Hàm tạo liên kết tải về PDF
+def download_link(pdf_data, filename, link_text):
+    b64 = base64.b64encode(pdf_data).decode()
+    return f'<a href="data:application/pdf;base64,{b64}" download="{filename}">{link_text}</a>'
 
 # Tiêu đề chính của ứng dụng
 st.title("STex - Phần Mềm Hỗ Trợ Sử Dụng Latex")
@@ -8,7 +46,7 @@ st.title("STex - Phần Mềm Hỗ Trợ Sử Dụng Latex")
 main_menu = st.sidebar.selectbox("Chọn Menu Chính", [
     "Trộn Đề", "Giải Toán", "Tạo Bài Đồng Loạt", "Soát Lỗi", "Beamer",
     "Đề Tương Tự Theo Ma Trận", "MathPix2Tex-Đề Tự Luận", "Game Logic",
-    "Phiếu Tô", "Tiện ích", "Trộn Đề 2025", "Thông tin tác giả"
+    "Phiếu Tô", "Tiện ích", "Trộn Đề 2025", "Thông tin tác giả", "Chuyển Đổi LaTeX sang PDF"
 ])
 
 # Hiển thị nội dung tương ứng với menu chính đã chọn
@@ -20,88 +58,86 @@ if main_menu == "Trộn Đề":
 elif main_menu == "Giải Toán":
     st.header("Giải Toán")
     # Tạo các nút cho từng chức năng
-if st.button("Điều kiện đếm số"):
-    # Gọi hàm hoặc mở dialog tương ứng với điều kiện đếm số
-    st.write("Bạn đã chọn chức năng Điều kiện đếm số")
-    # Điều hướng đến chức năng trong ConditionDialog()
-    ConditionDialog()
+    if st.button("Điều kiện đếm số"):
+        st.write("Bạn đã chọn chức năng Điều kiện đếm số")
+        ConditionDialog()
 
-if st.button("Điểm trong tam giác"):
-    st.write("Bạn đã chọn chức năng Điểm trong tam giác")
-    special_points_calculator()
+    if st.button("Điểm trong tam giác"):
+        st.write("Bạn đã chọn chức năng Điểm trong tam giác")
+        special_points_calculator()
 
-if st.button("Tích vô hướng có hướng"):
-    st.write("Bạn đã chọn chức năng Tích vô hướng có hướng")
-    VectorCalculatorDialog()
+    if st.button("Tích vô hướng có hướng"):
+        st.write("Bạn đã chọn chức năng Tích vô hướng có hướng")
+        VectorCalculatorDialog()
 
-if st.button("Tìm hình chiếu"):
-    st.write("Bạn đã chọn chức năng Tìm hình chiếu")
-    ProjectionCalculatorDialog()
+    if st.button("Tìm hình chiếu"):
+        st.write("Bạn đã chọn chức năng Tìm hình chiếu")
+        ProjectionCalculatorDialog()
 
-if st.button("Tính diện tích và thể tích"):
-    st.write("Bạn đã chọn chức năng Tính diện tích và thể tích")
-    GeometryCalculatorDialog()
+    if st.button("Tính diện tích và thể tích"):
+        st.write("Bạn đã chọn chức năng Tính diện tích và thể tích")
+        GeometryCalculatorDialog()
 
-if st.button("Tính giới hạn hàm số"):
-    st.write("Bạn đã chọn chức năng Tính giới hạn hàm số")
-    LimitCalculatorDialog()
+    if st.button("Tính giới hạn hàm số"):
+        st.write("Bạn đã chọn chức năng Tính giới hạn hàm số")
+        LimitCalculatorDialog()
 
-if st.button("Giải hệ phương trình"):
-    st.write("Bạn đã chọn chức năng Giải hệ phương trình")
-    SystemOfEquationsSolverDialog()
+    if st.button("Giải hệ phương trình"):
+        st.write("Bạn đã chọn chức năng Giải hệ phương trình")
+        SystemOfEquationsSolverDialog()
 
-if st.button("Giải phương trình bậc cao"):
-    st.write("Bạn đã chọn chức năng Giải phương trình bậc cao")
-    AdvancedEquationSolverDialog()
+    if st.button("Giải phương trình bậc cao"):
+        st.write("Bạn đã chọn chức năng Giải phương trình bậc cao")
+        AdvancedEquationSolverDialog()
 
-if st.button("Tính khoảng cách điểm tới mặt phẳng"):
-    st.write("Bạn đã chọn chức năng Tính khoảng cách điểm tới mặt phẳng")
-    PlaneDistanceCalculatorDialog()
+    if st.button("Tính khoảng cách điểm tới mặt phẳng"):
+        st.write("Bạn đã chọn chức năng Tính khoảng cách điểm tới mặt phẳng")
+        PlaneDistanceCalculatorDialog()
 
-if st.button("Máy tính cơ bản"):
-    st.write("Bạn đã chọn chức năng Máy tính cơ bản")
-    Calculator()
+    if st.button("Máy tính cơ bản"):
+        st.write("Bạn đã chọn chức năng Máy tính cơ bản")
+        Calculator()
 
-if st.button("Phân tích đa thức"):
-    st.write("Bạn đã chọn chức năng Phân tích đa thức")
-    PolynomialOperationsDialog()
+    if st.button("Phân tích đa thức"):
+        st.write("Bạn đã chọn chức năng Phân tích đa thức")
+        PolynomialOperationsDialog()
 
-if st.button("Tính tổng hữu hạn"):
-    st.write("Bạn đã chọn chức năng Tính tổng hữu hạn")
-    FiniteSumCalculatorDialog()
+    if st.button("Tính tổng hữu hạn"):
+        st.write("Bạn đã chọn chức năng Tính tổng hữu hạn")
+        FiniteSumCalculatorDialog()
 
-# Các chức năng từ các module khác
-if st.button("Tính tích phân"):
-    st.write("Bạn đã chọn chức năng Tính tích phân")
-    # Tích hợp các hàm từ tich_phan.py
+    # Các chức năng từ các module khác
+    if st.button("Tính tích phân"):
+        st.write("Bạn đã chọn chức năng Tính tích phân")
+        # Tích hợp các hàm từ tich_phan.py
 
-if st.button("Nguyên hàm"):
-    st.write("Bạn đã chọn chức năng Nguyên hàm")
-    # Tích hợp các hàm từ nguyenham.py
+    if st.button("Nguyên hàm"):
+        st.write("Bạn đã chọn chức năng Nguyên hàm")
+        # Tích hợp các hàm từ nguyenham.py
 
-if st.button("Đạo hàm"):
-    st.write("Bạn đã chọn chức năng Đạo hàm")
-    # Tích hợp các hàm từ dao_ham.py
+    if st.button("Đạo hàm"):
+        st.write("Bạn đã chọn chức năng Đạo hàm")
+        # Tích hợp các hàm từ dao_ham.py
 
-if st.button("Khoảng cách giữa hai điểm"):
-    st.write("Bạn đã chọn chức năng Khoảng cách giữa hai điểm")
-    # Tích hợp các hàm từ khoang_cach_2diem.py
+    if st.button("Khoảng cách giữa hai điểm"):
+        st.write("Bạn đã chọn chức năng Khoảng cách giữa hai điểm")
+        # Tích hợp các hàm từ khoang_cach_2diem.py
 
-if st.button("Khoảng cách điểm tới đường"):
-    st.write("Bạn đã chọn chức năng Khoảng cách điểm tới đường")
-    # Tích hợp các hàm từ khoang_cach_diem_to_duong.py
+    if st.button("Khoảng cách điểm tới đường"):
+        st.write("Bạn đã chọn chức năng Khoảng cách điểm tới đường")
+        # Tích hợp các hàm từ khoang_cach_diem_to_duong.py
 
-if st.button("Khoảng cách giữa hai đường thẳng"):
-    st.write("Bạn đã chọn chức năng Khoảng cách giữa hai đường thẳng")
-    # Tích hợp các hàm từ khoang_cach_dt_to_dt.py
+    if st.button("Khoảng cách giữa hai đường thẳng"):
+        st.write("Bạn đã chọn chức năng Khoảng cách giữa hai đường thẳng")
+        # Tích hợp các hàm từ khoang_cach_dt_to_dt.py
 
-if st.button("Tổ hợp và xác suất"):
-    st.write("Bạn đã chọn chức năng Tổ hợp và xác suất")
-    CombinatoricsCalculatorDialog()
+    if st.button("Tổ hợp và xác suất"):
+        st.write("Bạn đã chọn chức năng Tổ hợp và xác suất")
+        CombinatoricsCalculatorDialog()
 
-if st.button("Giải toán thống kê"):
-    st.write("Bạn đã chọn chức năng Giải toán thống kê")
-    # Tích hợp các hàm từ giai_toan_thong_ke.py
+    if st.button("Giải toán thống kê"):
+        st.write("Bạn đã chọn chức năng Giải toán thống kê")
+        # Tích hợp các hàm từ giai_toan_thong_ke.py
 
 elif main_menu == "Tạo Bài Đồng Loạt":
     st.header("Tạo Bài Đồng Loạt")
@@ -142,3 +178,21 @@ elif main_menu == "Trộn Đề 2025":
 elif main_menu == "Thông tin tác giả":
     st.header("Thông tin tác giả")
     # Thông tin về tác giả hoặc các liên hệ liên quan
+
+elif main_menu == "Chuyển Đổi LaTeX sang PDF":
+    st.header("Chuyển Đổi LaTeX sang PDF")
+    
+    latex_content = st.text_area("Nhập nội dung LaTeX của bạn tại đây", height=300)
+
+    if st.button("Chuyển Đổi sang PDF"):
+        if latex_content:
+            create_main_tex(latex_content)  # Tạo tệp main.tex
+            pdf_data, error = compile_latex_online()  # Biên dịch LaTeX sang PDF
+            if pdf_data:
+                st.markdown(download_link(pdf_data, "output.pdf", "Tải về PDF"), unsafe_allow_html=True)
+            else:
+                st.error(f"Đã xảy ra lỗi: {error}")
+
+        # Dọn dẹp tệp tạm thời sau khi xong việc
+        if os.path.exists("main.tex"):
+            os.remove("main.tex")
