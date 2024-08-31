@@ -32,7 +32,9 @@ def compile_latex_online():
         pdf_data = response.content
         return pdf_data, None
     else:
-        return None, "Failed to compile LaTeX online."
+        error_message = response.text  # Lấy nội dung chi tiết của lỗi
+        return None, f"Failed to compile LaTeX online. Error: {error_message}"
+
 
 # Hàm tạo liên kết tải về PDF
 def download_link(pdf_data, filename, link_text):
